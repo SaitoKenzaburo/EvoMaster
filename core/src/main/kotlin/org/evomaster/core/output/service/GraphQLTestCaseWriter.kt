@@ -16,6 +16,14 @@ import org.evomaster.core.search.gene.utils.GeneUtils
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
+import java.io.File
+import java.io.IOException
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.FileWriter
+import java.io.PrintWriter
+import java.io.BufferedWriter
+
 class GraphQLTestCaseWriter : HttpWsTestCaseWriter() {
 
     companion object {
@@ -60,8 +68,83 @@ class GraphQLTestCaseWriter : HttpWsTestCaseWriter() {
         val gql = call as GraphQLAction
 
         val body = GraphQLUtils.generateGQLBodyEntity(gql, format)
+        try {
+            // Fileオブジェクトを作成
+            val file = FileWriter("queries.txt")
+            val pw = PrintWriter(BufferedWriter(file))
+
+            pw.println(body!!.entity)
+
+            println(body!!.entity)
+            pw.close()
+            val content = body?.toString() ?: throw IllegalArgumentException("Body is null")
+
+            // ファイルに文字列を書き込む
+            // file.writeText(body!!.entity)
+
+            // println("Successfully wrote to the file.")
+        } catch (e: IOException) {
+            println("An error occurred while writing to the file: ${e.message}")
+        } catch (e: Exception) {
+            println("An unexpected error occurred: ${e.message}")
+        }
+
+        // val coverageData = runGraphQLInspector()
+        // if (coverageData != null) {
+        //     val typesCoverage = coverageData["Types covered"]?.removeSuffix("%")?.toFloatOrNull()?.div(100.0)
+        //     println("Types Coverage: $typesCoverage")
+        // }
         printSendJsonBody(body!!.entity, lines)
     }
+
+    // fun runGraphQLInspector(): Map<String, String>? {
+    //     try {
+    //         // プロセスビルダーを使用してコマンドを実行
+    //         val processBuilder = ProcessBuilder(
+    //             "graphql-inspector", "coverage", "queries.graphql", "spacex_schema.graphql"
+    //         )
+    //         processBuilder.redirectErrorStream(true)
+
+    //         val process = processBuilder.start()
+
+    //         // コマンドの出力を読み取る
+    //         val reader = BufferedReader(InputStreamReader(process.inputStream))
+    //         val output = StringBuilder()
+    //         var line: String? = null
+
+    //         while (reader.readLine().also { line = it } != null) {
+    //             output.append(line).append("\n")
+    //         }
+
+    //         val exitCode = process.waitFor()
+
+    //         if (exitCode != 0) {
+    //             println("Error running graphql-inspector: $output")
+    //             return null
+    //         }
+
+    //         // 出力を解析してマップに変換
+    //         return parseTable(output.toString())
+
+    //     } catch (e: Exception) {
+    //         println("Exception occurred: ${e.message}")
+    //         return null
+    //     }
+    // }
+
+    // fun parseTable(inputString: String): Map<String, String> {
+    //     val pattern = Regex("""│\s*(.*?)\s*│\s*(.*?)\s*│""")
+    //     val matches = pattern.findAll(inputString)
+
+    //     val result = mutableMapOf<String, String>()
+    //     for (match in matches) {
+    //         val key = match.groupValues[1].trim()
+    //         val value = match.groupValues[2].trim()
+    //         result[key] = value
+    //     }
+
+    //     return result
+    // }
 
     override fun getAcceptHeader(call: HttpWsAction, res: HttpWsCallResult): String {
 
